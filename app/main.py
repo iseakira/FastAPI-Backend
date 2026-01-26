@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from scalar_fastapi import get_scalar_api_reference
 
 app = FastAPI()
 
-shipment = {
+shipments = {
    12076: {
         "weight":2.0,
         "content":"Books",
@@ -25,3 +26,9 @@ shipment = {
     }
 }
 
+@app.get("/scalar")
+def get_scalar_docs():
+    return get_scalar_api_reference(
+        openapi_url = app.openapi_url,
+        title = "Scalar_API"
+    )
