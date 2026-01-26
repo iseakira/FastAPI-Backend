@@ -43,6 +43,12 @@ def get_shipment(id:int) -> dict:
         )
     return shipments[id]
 
+@app.get("/shipment/{field}")
+def get_shipment_field(field:str, id:int):
+    return {
+        field: shipments[id][field]
+    }
+
 @app.post("/shipment")
 def create_shipment(weight:float,content:str):
     new_id = max(shipments.keys()) + 1
