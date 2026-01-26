@@ -1,4 +1,5 @@
-from fastapi import FastAPI,status,HttpException
+from fastapi import FastAPI,status
+from fastapi.exceptions import HTTPException as HttpException
 from scalar_fastapi import get_scalar_api_reference
 
 app = FastAPI()
