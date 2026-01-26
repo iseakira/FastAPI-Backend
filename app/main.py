@@ -42,3 +42,13 @@ def get_shipment(id:int) -> dict:
             detail = "Shipment not found"
         )
     return shipments[id]
+
+@app.post("/shipment")
+def create_shipment(weight:float,content:str):
+    new_id = max(shipments.keys()) + 1
+    shipments[new_id] = {
+        "weight": weight,
+        "content": content,
+        "status": "placed"
+   }
+    return {"id": new_id}
