@@ -58,3 +58,23 @@ def create_shipment(weight:float,content:str):
         "status": "placed"
    }
     return {"id": new_id}
+
+@app.put("/shipment")
+def update_shipment(id:int, content:str, weight:float, status:str):
+    shipments[id] = {
+        "weight":weight,
+        "content":content,
+        "status":status
+    }
+    return shipments[id]
+
+@app.patch("/shipment")
+def patch_shipment(id:int, body:dict):
+    for key,value in body.items():
+        shipments[id][key] = value
+    return shipments[id]
+
+@app.delete("/shipment")
+def delete_shipment(id:int):
+    shipments.pop(id)
+    return {"detail":"Shipment with id {id} is deleted"}
