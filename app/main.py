@@ -1,6 +1,11 @@
 from fastapi import FastAPI,status
 from fastapi.exceptions import HTTPException as HttpException
 from scalar_fastapi import get_scalar_api_reference
+from .schemas import ShipmentRead, ShipmentStatus, ShipmentCreate, ShipmentUpdate
+
+
+
+
 
 app = FastAPI()
 
@@ -8,22 +13,26 @@ shipments = {
    12076: {
         "weight":2.0,
         "content":"Books",
-        "status": "in transit"
+        "status": "in transit",
+        "destination": 101,
    },
     12077: {
           "weight":5.5,
           "content":"Electronics",
-          "status": "delivered"
+          "status": "delivered",
+          "destination": 102,
     },
     12078: {
           "weight":1.2,
           "content":"Clothes",
-          "status": "pending"
+          "status": "pending",
+          "destination": 103,
     },
     12079: {
           "weight":3.0,
           "content":"Toys",
-          "status": "in transit"
+          "status": "in transit",
+          "destination": 104,
     }
 }
 
@@ -34,8 +43,8 @@ def get_scalar_docs():
         title = "Scalar_API"
     )
 
-@app.get("/shipment")
-def get_shipment(id:int) -> dict:
+@app.get("/shipment", response_model=ShipmentRead)
+def get_shipment(id:int) :
     if id not in shipments:
         raise HttpException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -50,11 +59,12 @@ def get_shipment_field(field:str, id:int):
     }
 
 @app.post("/shipment")
-def create_shipment(weight:float,content:str):
+def create_shipment(body:ShipmentCreate):
     new_id = max(shipments.keys()) + 1
     shipments[new_id] = {
-        "weight": weight,
-        "content": content,
+        "weight": body.weight,
+        "content": body.content,
+        "destination": body.destination,
         "status": "placed"
    }
     return {"id": new_id}
@@ -68,10 +78,9 @@ def update_shipment(id:int, content:str, weight:float, status:str):
     }
     return shipments[id]
 
-@app.patch("/shipment")
-def patch_shipment(id:int, body:dict):
-    for key,value in body.items():
-        shipments[id][key] = value
+@app.patch("/shipment",response_model=ShipmentRead)
+def patch_shipment(id:int, body:ShipmentUpdate):
+    shipments[id].update(body)
     return shipments[id]
 
 @app.delete("/shipment")
