@@ -1,7 +1,8 @@
 from fastapi import FastAPI,status
 from fastapi.exceptions import HTTPException as HttpException
 from scalar_fastapi import get_scalar_api_reference
-from .schemas import ShipmentRead, ShipmentStatus, ShipmentCreate, ShipmentUpdate
+from .schemas import ShipmentRead, ShipmentCreate, ShipmentUpdate
+from .database import save, shipments
 
 
 
@@ -9,32 +10,6 @@ from .schemas import ShipmentRead, ShipmentStatus, ShipmentCreate, ShipmentUpdat
 
 app = FastAPI()
 
-shipments = {
-   12076: {
-        "weight":2.0,
-        "content":"Books",
-        "status": "in transit",
-        "destination": 101,
-   },
-    12077: {
-          "weight":5.5,
-          "content":"Electronics",
-          "status": "delivered",
-          "destination": 102,
-    },
-    12078: {
-          "weight":1.2,
-          "content":"Clothes",
-          "status": "pending",
-          "destination": 103,
-    },
-    12079: {
-          "weight":3.0,
-          "content":"Toys",
-          "status": "in transit",
-          "destination": 104,
-    }
-}
 
 @app.get("/scalar")
 def get_scalar_docs():
@@ -62,11 +37,11 @@ def get_shipment_field(field:str, id:int):
 def create_shipment(body:ShipmentCreate):
     new_id = max(shipments.keys()) + 1
     shipments[new_id] = {
-        "weight": body.weight,
-        "content": body.content,
-        "destination": body.destination,
+        **body.model_dump(),
+        "id":new_id,
         "status": "placed"
    }
+    save()
     return {"id": new_id}
 
 @app.put("/shipment")
@@ -81,6 +56,7 @@ def update_shipment(id:int, content:str, weight:float, status:str):
 @app.patch("/shipment",response_model=ShipmentRead)
 def patch_shipment(id:int, body:ShipmentUpdate):
     shipments[id].update(body)
+    save()
     return shipments[id]
 
 @app.delete("/shipment")
