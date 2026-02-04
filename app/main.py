@@ -27,11 +27,6 @@ def get_shipment(id:int) :
         )
     return shipments[id]
 
-@app.get("/shipment/{field}")
-def get_shipment_field(field:str, id:int):
-    return {
-        field: shipments[id][field]
-    }
 
 @app.post("/shipment")
 def create_shipment(body:ShipmentCreate):
