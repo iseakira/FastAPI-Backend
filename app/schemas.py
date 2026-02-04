@@ -10,7 +10,7 @@ class ShipmentStatus(str,Enum):
 class BaseShipment(BaseModel):
     content:str = Field(max_length=30)
     weight:float = Field(le=25, ge=1)
-    destination:int
+
 
 
 class ShipmentRead(BaseShipment):
