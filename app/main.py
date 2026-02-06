@@ -28,8 +28,8 @@ def get_scalar_docs():
     )
 
 @app.get("/shipment", response_model=ShipmentRead)
-def get_shipment(id:int,session:SessionDep):
-    shipment = session.get(Shipment,id)
+async def get_shipment(id:int,session:SessionDep):
+    shipment = await session.get(Shipment,id)
     if shipment is None:
         raise HttpException(
             status_code=status.HTTP_404_NOT_FOUND,
