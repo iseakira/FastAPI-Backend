@@ -4,6 +4,11 @@
 - fastapi devでよき
 - /scalarでAPIドキュメントを見れるよ
 
+## postgressDBの見方
+
+- pgAdmin起動
+- shipmet開いてtablesのall_arrowをみたらOK
+
 ##　非同期データベースについて　session.py
 モジュール読み込み時
 
