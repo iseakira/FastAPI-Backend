@@ -1,6 +1,13 @@
 from sqlmodel import SQLModel,Field
-from app.api.schemas.shipment import ShipmentStatus
 from datetime import datetime
+from enum import Enum
+
+
+class ShipmentStatus(str,Enum):
+    placed = "placed"
+    in_transit = "in_transit"
+    out_for_delivery = "out_for_delivery"
+    delivered = "delivered"
 class Shipment(SQLModel, table=True):
   __tablename__ = "shipment"
 
@@ -10,3 +17,4 @@ class Shipment(SQLModel, table=True):
   status:ShipmentStatus
   destination:int
   estimated_delivery:datetime
+

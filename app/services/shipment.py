@@ -1,4 +1,5 @@
-from app.api.schemas.shipment import ShipmentCreate, ShipmentUpdate, ShipmentStatus
+from app.api.schemas.shipment import ShipmentCreate, ShipmentUpdate
+from app.database.models import ShipmentStatus
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Shipment
