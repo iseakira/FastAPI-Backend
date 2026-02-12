@@ -23,6 +23,6 @@ class Seller(SQLModel, table=True):
 
    id:int=Field(default=None,primary_key=True)
    name:str
-   email_: EmailStr
+   email: EmailStr
    password_hash:str
 
