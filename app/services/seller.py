@@ -52,6 +52,10 @@ class SellerService:
        algorithm=security_settings.JWT_ALGORITHM,
        key=security_settings.JWT_SECRET,
      )
+     jwt.decode(
+       "token",
+
+     )
      return token
 
 
