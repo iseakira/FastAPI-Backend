@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from app.api.schemas.shipment import ShipmentRead, ShipmentCreate, ShipmentUpdate
-from app.api.dependencies import ServiceDep
+from app.api.dependencies import SellerDep, ServiceDep
 
 router = APIRouter()
 
@@ -15,7 +15,7 @@ async def get_shipment(id:int,service:ServiceDep):
     return shipment
 
 @router.post("/shipment",response_model=None)
-async def create_shipment(shipment:ShipmentCreate,service:ServiceDep):
+async def create_shipment(shipment:ShipmentCreate,service:ServiceDep,seller:SellerDep):
     return await service.add(shipment)
 
 
