@@ -1,13 +1,12 @@
-from datetime import datetime, timedelta
 from fastapi import HTTPException,status
-import jwt
 
-from app.config import security_settings
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import  AsyncSession
 from passlib.context import CryptContext
 from app.api.schemas.seller import SellerCreate
 from app.database.models import Seller
+from app.utils import generate_access_token
 
 ctx = CryptContext(schemes=["argon2"], deprecated="auto")
 
@@ -31,6 +30,7 @@ class SellerService:
 
      seller=result.scalar()
 
+
      if seller is None or  not ctx.verify(
        password,
        seller.password_hash,
@@ -40,22 +40,15 @@ class SellerService:
          detail = "Email or Password is not found"
        )
 
-     token=jwt.encode(
-       payload={
+     token=generate_access_token(
+       data={
          "user":{
            "name":seller.name,
-           "email":seller.email,
-
-         },
-         "exp":datetime.now() + timedelta(days=1)
-       },
-       algorithm=security_settings.JWT_ALGORITHM,
-       key=security_settings.JWT_SECRET,
+           "id":seller.id,
+         }
+       }
      )
-     jwt.decode(
-       "token",
 
-     )
      return token
 
 

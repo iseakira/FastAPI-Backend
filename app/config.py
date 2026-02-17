@@ -26,3 +26,4 @@ class SecuritySettings(BaseSettings):
 
 db_settings = DatabaseSettings()
 security_settings= SecuritySettings()
+
