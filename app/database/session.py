@@ -7,7 +7,7 @@ from app.config import DatabaseSettings
 db_settings = DatabaseSettings()
 engine = create_async_engine(
     url = db_settings.POSTGRES_URL,
-    echo = True,
+    echo = db_settings.SQL_ECHO,
 )
 
 async def create_db_tables():

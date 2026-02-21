@@ -4,6 +4,16 @@
 - fastapi devでよき
 - /scalarでAPIドキュメントを見れるよ
 
+## redisの起動方法
+
+- ubuntuからredis-server
+
+## DBがおかしいときは、、
+
+環境変数を見直そう
+port番号も見直そう
+JWTには期限もあるので注意
+
 ## postgressDBの見方
 
 - pgAdmin起動
