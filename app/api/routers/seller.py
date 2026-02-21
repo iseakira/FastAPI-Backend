@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
 from ..schemas.seller import SellerRead, SellerCreate
-from app.api.dependencies import SellerServiceDep
+from app.api.dependencies import SellerServiceDep, get_access_token
 
 
 router = APIRouter(prefix="/seller",tags=["Seller"])
@@ -25,6 +25,12 @@ async def login_seller(
     "access_token":token,
     "type":"bearer",
   }
+
+## ログアウト
+@router.get("/logout")
+async def logput_seller(token_data:Annotated[dict,Depends(get_access_token)]):
+  token_data
+
 
 
 
