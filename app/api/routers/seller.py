@@ -14,7 +14,7 @@ async def register_seller(seller:SellerCreate,service:SellerServiceDep):
 
 # emailアドレスとパスワードを入力することでJWTトークンが返ってくる、
 # requestformはOAuth2PasswordRequestFormに依存
-# formdataのパースやoauth2_schemeと連携してBarer認証が可能
+# formdataのパースやoauth2_schemeと連携してBearer認証が可能
 @router.post("/token")
 async def login_seller(
   request_form:Annotated[OAuth2PasswordRequestForm,Depends()],
