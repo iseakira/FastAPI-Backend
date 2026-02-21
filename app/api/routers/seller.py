@@ -31,6 +31,7 @@ async def login_seller(
 ## ログアウト
 @router.get("/logout")
 async def logout_seller(token_data:Annotated[dict,Depends(get_access_token)]):
+  ##token_dataのuniqueIDをRedisのblacklistにぶち込んでる
   await add_jti_to_blacklist(token_data["jti"])
   return {
     "detail":"Success logout"
