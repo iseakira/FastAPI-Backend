@@ -1,7 +1,9 @@
 from pydantic import EmailStr
-from sqlmodel import SQLModel,Field
+from sqlmodel import Column, Relationship, SQLModel,Field
+from uuid import uuid4,UUID
 from datetime import datetime
 from enum import Enum
+from sqlalchemy.dialects import postgresql
 
 
 class ShipmentStatus(str,Enum):
@@ -12,17 +14,35 @@ class ShipmentStatus(str,Enum):
 class Shipment(SQLModel, table=True):
   __tablename__ = "shipment"
 
-  id:int = Field(default=None, primary_key=True)
+  id:UUID = Field(
+     sa_column=Column(
+        ## UUIDの扱いはDBごとに違うので明示
+        postgresql.UUID,
+        ##UUIDの生成ルールを関数で与えてる
+        default=uuid4,
+        primary_key=True,
+     )
+  )
   content:str
   weight:float = Field(le=25)
   status:ShipmentStatus
   destination:int
   estimated_delivery:datetime
 
+  seller_id:UUID = Field(foreign_key="seller.id")
+  ## Sellerクラスのオブジェクトを引っ張てShipmentクラスとの繋がりを書きたいだけ、舌も同じ
+  seller:"Seller"=Relationship(
+     back_populates="shipments",
+     sa_relationship_kwargs={"lazy":"selection"})
+
 class Seller(SQLModel, table=True):
+   _tablename_="seller"
 
    id:int=Field(default=None,primary_key=True)
    name:str
    email: EmailStr
    password_hash:str
+   shipments:list[Shipment]=Relationship(
+      back_populates="seller",
+      sa_relationship_kwargs={"lazy":"selection"})
 
