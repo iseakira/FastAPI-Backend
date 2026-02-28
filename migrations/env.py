@@ -1,5 +1,7 @@
 import asyncio
+
 from logging.config import fileConfig
+import os
 
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
@@ -7,12 +9,19 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from app.config import db_settings
+from dotenv import load_dotenv
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+load_dotenv(os.path.join(BASE_DIR, ".env"))
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-config.set_main_option("sqlalchemy.url",db_settings.POSTGRESS_URL)
+config.set_main_option("sqlalchemy.url",db_settings.POSTGRES_URL)
+print("DB URL:", db_settings.POSTGRES_URL)
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
