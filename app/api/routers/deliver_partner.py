@@ -1,0 +1,51 @@
+from typing import Annotated
+from fastapi import APIRouter, Depends
+from fastapi.security import OAuth2PasswordRequestForm
+
+from app.database.redis import add_jti_to_blacklist
+
+from ..schemas.delivery_partner import DeliveryPartnerRead, DeliveryPartnerCreate, DeliveryPartnerUpdate
+from app.api.dependencies import DeliveryPartnerDep, get_partner_access_token
+
+
+router = APIRouter(prefix="/partner",tags=["Delivery Partner"])
+
+@router.post("/signup",response_model=DeliveryPartnerRead)
+async def register_delivery_partner(seller:DeliveryPartnerCreate,service):
+  return await service.add(seller)
+
+# emailアドレスとパスワードを入力することでJWTトークンが返ってくる、
+# requestformはOAuth2PasswordRequestFormに依存
+# formdataのパースやoauth2_schemeと連携してBearer認証が可能
+@router.post("/token")
+async def login_delivery_partner(
+  request_form:Annotated[OAuth2PasswordRequestForm,Depends()],
+  service,
+  ):
+  token=await service.token(request_form.username, request_form.password)
+  return {
+    "access_token":token,
+    "type":"bearer",
+  }
+
+## Update Delivery Partner
+@router.post("/")
+async def update_delivery_partner(
+  partner_update:DeliveryPartnerUpdate,
+  partner:DeliveryPartnerDep,
+  service,
+):
+  pass
+
+## ログアウト
+@router.get("/logout")
+async def logout_delivery_partner(token_data:Annotated[dict,Depends(get_partner_access_token)]):
+  ##token_dataのuniqueIDをRedisのblacklistにぶち込んでる
+  await add_jti_to_blacklist(token_data["jti"])
+  return {
+    "detail":"Success logout"
+  }
+
+
+
+

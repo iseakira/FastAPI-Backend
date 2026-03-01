@@ -1,7 +1,7 @@
 """init
 
 Revision ID: d143b375977a
-Revises: 
+Revises:
 Create Date: 2026-03-01 18:20:35.253071
 
 """
@@ -10,6 +10,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
+import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision: str = 'd143b375977a'
