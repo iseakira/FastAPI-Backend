@@ -1,4 +1,5 @@
 from pydantic import EmailStr
+from sqlalchemy import ARRAY,INTEGER
 from sqlmodel import Column, Relationship, SQLModel,Field
 from uuid import uuid4,UUID
 from datetime import datetime
@@ -23,6 +24,12 @@ class Shipment(SQLModel, table=True):
         primary_key=True,
      )
   )
+  created_at:datetime = Field(
+      sa_column = Column(
+         postgresql.TIMESTAMP,
+         default=datetime.now,
+      )
+   )
   content:str
   weight:float = Field(le=25)
   status:ShipmentStatus
@@ -35,8 +42,20 @@ class Shipment(SQLModel, table=True):
      back_populates="shipments",
      sa_relationship_kwargs={"lazy":"selectin"})
 
-class Seller(SQLModel, table=True):
-   _tablename_="seller"
+  delivery_partner_id:UUID = Field(foreign_key="delivery_partner.id")
+  delivery_partner:"DeliveryPartner" = Relationship(
+     back_populates ="shipments",
+     sa_relationship_kwargs={"lazy":"selectin"}
+
+  )
+
+class User(SQLModel,table=False):
+
+      name:str
+      email:EmailStr
+      password_hash:str=Field(exclude=True)
+class Seller(User, table=True):
+   __tablename__="seller"
 
    id:UUID=Field(
      sa_column=Column(
@@ -47,10 +66,42 @@ class Seller(SQLModel, table=True):
         primary_key=True,
      )
   )
-   name:str
-   email: EmailStr
-   password_hash:str
+   created_at:datetime = Field(
+      sa_column = Column(
+         postgresql.TIMESTAMP,
+         default=datetime.now,
+      )
+   )
    shipments:list[Shipment]=Relationship(
       back_populates="seller",
       sa_relationship_kwargs={"lazy":"selectin"})
+
+class DeliveryPartner(User,table=True):
+   __tablename__="delivery_partner"
+   id:UUID=Field(
+      sa_column=Column(
+        ## UUIDの扱いはDBごとに違うので明示
+        postgresql.UUID,
+        ##UUIDの生成ルールを関数で与えてる
+        default=uuid4,
+        primary_key=True,
+     )
+  )
+   created_at:datetime = Field(
+      sa_column = Column(
+         postgresql.TIMESTAMP,
+         default=datetime.now,
+      )
+   )
+   serviceable_zip_codes:list[int] = Field(
+      sa_column = Column(ARRAY(INTEGER))
+   )
+   max_handling_capacity:int
+   shipments : list[Shipment] = Relationship(
+      back_populates="delivery_partner",
+      sa_relationship_kwargs={"lazy":"selectin"}
+   )
+
+
+
 
