@@ -8,10 +8,12 @@ from app.database.models import Shipment
 from datetime import datetime, timedelta
 
 from app.services.base import BaseService
+from app.services.delivery_partner import DeliveryPartnerService
 
 class ShipmentService(BaseService):
-  def __init__(self,session:AsyncSession):
+  def __init__(self,session:AsyncSession,partner_service:DeliveryPartnerService):
     super().__init__(Shipment,session)
+    self.partner_service = partner_service
 
 
   async def get(self,id:UUID) -> Shipment:
@@ -26,6 +28,8 @@ class ShipmentService(BaseService):
         estimated_delivery = datetime.now() + timedelta(days=3),
         seller_id=seller.id
     )
+     self.partner_service.assign_shipment(new_shipment)
+
      return await self._add(new_shipment)
 
   async def update(self,id:int,shipment_update:ShipmentUpdate):

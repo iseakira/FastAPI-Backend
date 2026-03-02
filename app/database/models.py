@@ -102,6 +102,20 @@ class DeliveryPartner(User,table=True):
       sa_relationship_kwargs={"lazy":"selectin"}
    )
 
+   @property
+   def active_shipments(self):
+       return [
+           shipment
+           for shipment in self.shipments
+
+           if shipment.status == ShipmentStatus.delivered
+       ]
+   @property
+   def current_handling_capacity(self):
+       return self.max_handling_capacity-len(self.active_shipments)
+
+
+
 
 
 
