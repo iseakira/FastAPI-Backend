@@ -29,7 +29,7 @@ class ShipmentService(BaseService):
      return await self._add(new_shipment)
 
   async def update(self,id:int,shipment_update:ShipmentUpdate):
-    shipment = await self.session.get(Shipment,id)
+    shipment = await self._get(id)
     shipment.sqlmodel_update(
         shipment_update.model_dump(exclude_none=True)
     )
@@ -37,6 +37,6 @@ class ShipmentService(BaseService):
 
 
   async def delete(self,id:UUID)-> None:
-    await self._delete(self.get(id))
+    await self._delete(await self.get(id))
 
 
