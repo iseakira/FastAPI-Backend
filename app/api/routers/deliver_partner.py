@@ -5,13 +5,13 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.database.redis import add_jti_to_blacklist
 
 from ..schemas.delivery_partner import DeliveryPartnerRead, DeliveryPartnerCreate, DeliveryPartnerUpdate
-from app.api.dependencies import DeliveryPartnerDep, get_partner_access_token
+from app.api.dependencies import DeliveryPartnerDep, DeliveryPartnerServiceDep, get_partner_access_token
 
 
 router = APIRouter(prefix="/partner",tags=["Delivery Partner"])
 
 @router.post("/signup",response_model=DeliveryPartnerRead)
-async def register_delivery_partner(seller:DeliveryPartnerCreate,service):
+async def register_delivery_partner(seller:DeliveryPartnerCreate,service:DeliveryPartnerServiceDep):
   return await service.add(seller)
 
 # emailアドレスとパスワードを入力することでJWTトークンが返ってくる、
@@ -20,7 +20,7 @@ async def register_delivery_partner(seller:DeliveryPartnerCreate,service):
 @router.post("/token")
 async def login_delivery_partner(
   request_form:Annotated[OAuth2PasswordRequestForm,Depends()],
-  service,
+  service:DeliveryPartnerServiceDep,
   ):
   token=await service.token(request_form.username, request_form.password)
   return {
@@ -33,7 +33,7 @@ async def login_delivery_partner(
 async def update_delivery_partner(
   partner_update:DeliveryPartnerUpdate,
   partner:DeliveryPartnerDep,
-  service,
+  service:DeliveryPartnerServiceDep,
 ):
   return await service.update(
       partner.sqlmodel_update(partner_update)

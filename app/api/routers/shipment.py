@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, status
 from app.api.schemas.shipment import ShipmentRead, ShipmentCreate, ShipmentUpdate
-from app.api.dependencies import SellerDep, ServiceDep
+from app.api.dependencies import DeliveryPartnerDep, SellerDep, ServiceDep
 
 router = APIRouter()
 
@@ -22,7 +22,11 @@ async def create_shipment(shipment:ShipmentCreate,service:ServiceDep,seller:Sell
 
 
 @router.patch("/shipment",response_model=ShipmentRead)
-async def patch_shipment(id:UUID, shipment_update:ShipmentUpdate, service:ServiceDep):
+async def update_shipment(
+    id:UUID, shipment_update:ShipmentUpdate,
+    patner:DeliveryPartnerDep,
+    service:ServiceDep):
+
     update = shipment_update.model_dump(exclude_none=True)
     if not update:
         raise HTTPException(
