@@ -29,7 +29,7 @@ async def login_delivery_partner(
   }
 
 ## Update Delivery Partner
-@router.post("/",responsemodel=DeliveryPartnerUpdate)
+@router.post("/",response_model=DeliveryPartnerUpdate)
 async def update_delivery_partner(
   partner_update:DeliveryPartnerUpdate,
   partner:DeliveryPartnerDep,

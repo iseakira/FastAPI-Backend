@@ -16,12 +16,13 @@ class UserService(BaseService):
     self.session=session
 
   async def _add_user(self,data:dict):
+    data = data.model_dump()
     user=self.model(
       **data,
       password_hash=ctx.hash(data["password"])
 
     )
-    self._add(user)
+    return await self._add(user)
 
   async def _get_by_email(self,email) -> User | None:
     return await self.session.scalar(
