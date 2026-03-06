@@ -32,22 +32,55 @@ class Shipment(SQLModel, table=True):
    )
   content:str
   weight:float = Field(le=25)
-  status:ShipmentStatus
+
+  timeline:list["ShipmentEvent"] = Relationship(
+      back_populates = "shipment"
+  )
+
   destination:int
   estimated_delivery:datetime
 
   seller_id:UUID = Field(foreign_key="seller.id")
   ## Sellerクラスのオブジェクトを引っ張てShipmentクラスとの繋がりを書きたいだけ、舌も同じ
   seller:"Seller"=Relationship(
-     back_populates="shipments",
+     back_populates="shipment",
      sa_relationship_kwargs={"lazy":"selectin"})
 
   delivery_partner_id:UUID = Field(foreign_key="delivery_partner.id")
   delivery_partner:"DeliveryPartner" = Relationship(
-     back_populates ="shipments",
+     back_populates ="shipment",
      sa_relationship_kwargs={"lazy":"selectin"}
 
   )
+
+
+class ShipmentEvent(SQLModel,table=True):
+    __tablenam__= "shipment_event"
+
+    id:UUID=Field(
+     sa_column=Column(
+        ## UUIDの扱いはDBごとに違うので明示
+        postgresql.UUID,
+        ##UUIDの生成ルールを関数で与えてる
+        default=uuid4,
+        primary_key=True,
+     )
+  )
+    created_at:datetime = Field(
+      sa_column = Column(
+         postgresql.TIMESTAMP,
+         default=datetime.now,
+      )
+   )
+    location:int
+    status:ShipmentStatus
+    description:str | None = Field(default = None)
+    shipment_id: UUID = Field(foreign_key="shipment.id")
+    shipment:Shipment=Relationship(
+        back_populates = "timeline",
+        sa_relationship_kwargs={"lazy":"selectin"}
+    )
+
 
 class User(SQLModel,table=False):
 
@@ -75,6 +108,9 @@ class Seller(User, table=True):
    shipments:list[Shipment]=Relationship(
       back_populates="seller",
       sa_relationship_kwargs={"lazy":"selectin"})
+
+   address:str
+   zip_code:int
 
 class DeliveryPartner(User,table=True):
    __tablename__="delivery_partner"
