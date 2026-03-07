@@ -53,6 +53,10 @@ class Shipment(SQLModel, table=True):
 
   )
 
+  def status(self):
+      self.timeline[-1].status
+      return self.timeline[-1].status if len(self.timeline) > 0 else None
+
 
 class ShipmentEvent(SQLModel,table=True):
     __tablenam__= "shipment_event"

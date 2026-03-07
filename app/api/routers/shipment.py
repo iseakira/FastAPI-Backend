@@ -24,7 +24,7 @@ async def create_shipment(shipment:ShipmentCreate,service:ServiceDep,seller:Sell
 @router.patch("/shipment",response_model=ShipmentRead)
 async def update_shipment(
     id:UUID, shipment_update:ShipmentUpdate,
-    patner:DeliveryPartnerDep,
+    partner:DeliveryPartnerDep,
     service:ServiceDep):
 
     update = shipment_update.model_dump(exclude_none=True)
@@ -33,8 +33,10 @@ async def update_shipment(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No fields provided for update"
         )
-    shipment = await service.update(id,shipment_update)
-    return shipment
+
+    return await service.update(
+        id,shipment_update,partner
+    )
 
 @router.delete("/shipment")
 async def delete_shipment(id:UUID,service:ServiceDep):
