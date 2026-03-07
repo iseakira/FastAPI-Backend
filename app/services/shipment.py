@@ -71,6 +71,19 @@ class ShipmentService(BaseService):
 
     return await self._update(shipment)
 
+  async def cancel(self,id:UUID,seller:Seller) -> Shipment:
+    shipment = await self.get(id)
+    if shipment.seller_id != seller.id:
+      raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Not Authorized"
+      )
+    event = await self.event_service.add(
+      shipment=shipment,
+      status=ShipmentStatus.cancelled
+    )
+    shipment.timeline.append(event)
+    return shipment
 
   async def delete(self,id:UUID)-> None:
     await self._delete(await self.get(id))
