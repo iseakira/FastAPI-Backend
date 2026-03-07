@@ -41,12 +41,13 @@ class ShipmentService(BaseService):
        )
      new_shipment.delivery_partner_id= partner.id
      shipment =await self._add(new_shipment)
-     self.event_service.add(
+     event =self.event_service.add(
        shipment=shipment,
        location = seller.zip_code,
        status = ShipmentStatus.placed,
        description = f"assigned to {partner.name}"
      )
+     shipment.timeline.append(event)
 
      return shipment
 
