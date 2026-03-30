@@ -32,8 +32,9 @@ class ShipmentEventService(BaseService):
     return await self._add(new_event)
 
   async def get_latest_event(self,shipment:Shipment):
+    await self.session.refresh(shipment, attribute_names=["timeline"])
     timeline=shipment.timeline
-    timeline.sort(key=lambda item:item.created_at)[-1]
+    timeline.sort(key=lambda item:item.created_at)
     return timeline[-1]
 
   def _generate_description(self,status:ShipmentStatus,location:int):
@@ -50,6 +51,7 @@ class ShipmentEventService(BaseService):
         return f"shipment at {location}"
 
   async def _notyfy(self,shipment:Shipment,status:ShipmentStatus):
+    await self.session.refresh(shipment, attribute_names=["seller", "delivery_partner"])
     match status:
       case ShipmentStatus.placed:
         await self.notification_service.send_mail(

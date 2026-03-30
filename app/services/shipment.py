@@ -36,18 +36,17 @@ class ShipmentService(BaseService):
         estimated_delivery = datetime.now() + timedelta(days=3),
         seller_id=seller.id
     )
-     partner =self.partner_service.assign_shipment(
+     partner =await self.partner_service.assign_shipment(
        new_shipment
        )
      new_shipment.delivery_partner_id= partner.id
      shipment =await self._add(new_shipment)
-     event =self.event_service.add(
+     await self.event_service.add(
        shipment=shipment,
        location = seller.zip_code,
        status = ShipmentStatus.placed,
        description = f"assigned to {partner.name}"
      )
-     shipment.timeline.append(event)
 
      return shipment
 
@@ -78,11 +77,10 @@ class ShipmentService(BaseService):
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Not Authorized"
       )
-    event = await self.event_service.add(
+    await self.event_service.add(
       shipment=shipment,
       status=ShipmentStatus.cancelled
     )
-    shipment.timeline.append(event)
     return shipment
 
   async def delete(self,id:UUID)-> None:

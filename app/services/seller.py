@@ -18,7 +18,7 @@ class SellerService(UserService):
        )
 
    async def token(self,email,password) -> str:
-     return self._generate_token(email,password)
+     return await self._generate_token(email,password)
 
 
 

@@ -1,5 +1,6 @@
 from fastapi import HTTPException,status
-from sqlalchemy import Sequence, select,any_
+from sqlalchemy import Sequence, select
+from sqlalchemy.orm import selectinload
 
 from app.api.schemas.delivery_partner import DeliveryPartnerCreate
 
@@ -15,12 +16,13 @@ class DeliveryPartnerService(UserService):
       delivery_partner
     )
   async def get_partner_by_zipcode(self,zipcode:int)->Sequence[DeliveryPartner]:
-    result=await self.session.scalars(
-      select(DeliveryPartner).where(
-        zipcode == any_(DeliveryPartner.serviceable_zip_codes)
-      )
+    statement = (
+        select(DeliveryPartner)
+        .where(DeliveryPartner.serviceable_zip_codes.any(zipcode))
+        .options(selectinload(DeliveryPartner.shipments))
     )
-    return result.all()
+    result = await self.session.execute(statement)
+    return result.scalars().all()
 
   async def assign_shipment(self,shipment:Shipment):
     eligible_partner = await self.get_partner_by_zipcode(shipment.destination)
