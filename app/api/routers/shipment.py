@@ -17,7 +17,11 @@ async def get_shipment(id:UUID,service:ShipmentServiceDep):
     return shipment
 
 @router.post("/shipment",response_model=None)
-async def create_shipment(shipment:ShipmentCreate,service:ShipmentServiceDep,seller:SellerDep):
+async def create_shipment(
+    shipment:ShipmentCreate,
+    service:ShipmentServiceDep,
+    seller:SellerDep
+):
     return await service.add(shipment,seller)
 
 

@@ -31,7 +31,7 @@ class Shipment(SQLModel, table=True):
          default=datetime.now,
       )
    )
-  client_contact_email:EmailStr | None
+  client_contact_email:EmailStr
   client_contact_phone:int | None
   content:str
   weight:float = Field(le=25)
