@@ -16,7 +16,9 @@ class UserService(BaseService):
     self.session=session
 
   async def _add_user(self,data:dict):
-    data = data.model_dump()
+    if not isinstance(data, dict):
+       data = data.model_dump()
+
     user=self.model(
       **data,
       password_hash=ctx.hash(data["password"])

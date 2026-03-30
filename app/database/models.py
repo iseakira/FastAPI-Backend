@@ -46,12 +46,12 @@ class Shipment(SQLModel, table=True):
   seller_id:UUID = Field(foreign_key="seller.id")
   ## Sellerクラスのオブジェクトを引っ張てShipmentクラスとの繋がりを書きたいだけ、舌も同じ
   seller:"Seller"=Relationship(
-     back_populates="shipment",
+     back_populates="shipments",
      sa_relationship_kwargs={"lazy":"selectin"})
 
   delivery_partner_id:UUID = Field(foreign_key="delivery_partner.id")
   delivery_partner:"DeliveryPartner" = Relationship(
-     back_populates ="shipment",
+     back_populates ="shipments",
      sa_relationship_kwargs={"lazy":"selectin"}
 
   )
@@ -62,7 +62,7 @@ class Shipment(SQLModel, table=True):
 
 
 class ShipmentEvent(SQLModel,table=True):
-    __tablenam__= "shipment_event"
+    __tablename__= "shipment_event"
 
     id:UUID=Field(
      sa_column=Column(
