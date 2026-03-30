@@ -52,14 +52,14 @@ class ShipmentEventService(BaseService):
   async def _notyfy(self,shipment:Shipment,status:ShipmentStatus):
     match status:
       case ShipmentStatus.placed:
-        self.notification_service.send_mail(
+        await self.notification_service.send_mail(
           recipients=[shipment.client_contact_email],
           subject="Your Order is Shipped",
           body=f"Your order with {shipment.seller.name} is picked up delivery {shipment.delivery_partner}",
 
         )
       case ShipmentStatus.out_for_delivery:
-       self.notification_service.send_mail(
+       await self.notification_service.send_mail(
           recipients=[shipment.client_contact_email],
           subject="Your Order is arriving",
           body="Our delivery executive is on their way"
