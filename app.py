@@ -15,7 +15,7 @@ async def send_message():
     recipients=["6323007@ed.tus.ac.jp"],
     subject = "Your Email Delivered With FastShip",
     body = "Things are about to get interesting...",
-    subtype=MessageType.plain
+    subtype=MessageType.plain,
   )
 
 )
