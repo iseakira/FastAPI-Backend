@@ -1,7 +1,7 @@
 ## バックエンドの起動方法
 
 - 仮想環境は.\venv\Scripts\activate で有効か
-- fastapi devでよき
+- fastapi app/main.pyでよき
 - /scalarでAPIドキュメントを見れるよ
 
 ## redisの起動方法
