@@ -10,5 +10,6 @@ class SellerRead(BaseSeller):
 
 
 class SellerCreate(BaseSeller):
-
   password:str
+  address: str
+  zip_code: int
