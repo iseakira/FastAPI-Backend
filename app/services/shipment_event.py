@@ -28,7 +28,7 @@ class ShipmentEventService(BaseService):
       description=description if description else self._generate_description,
       shipment_id = shipment.id,
     )
-    await self._notyfy(shipment,status)
+    await self._notify(shipment,status)
     return await self._add(new_event)
 
   async def get_latest_event(self,shipment:Shipment):
@@ -50,23 +50,44 @@ class ShipmentEventService(BaseService):
       case _:
         return f"shipment at {location}"
 
-  async def _notyfy(self,shipment:Shipment,status:ShipmentStatus):
+  async def _notify(self,shipment:Shipment,status:ShipmentStatus):
     await self.session.refresh(shipment, attribute_names=["seller", "delivery_partner"])
+
+    if status == ShipmentStatus.in_transit:
+      return
+
+    ## email情報を初期化
+    subject:str
+    context = {}
+    template_name:str
+
+    ## 各ケースに応じてメールの内容を変更
     match status:
       case ShipmentStatus.placed:
-        await self.notification_service.send_mail(
-          recipients=[shipment.client_contact_email],
-          subject="Your Order is Shipped",
-          body=f"Your order with {shipment.seller.name} is picked up delivery {shipment.delivery_partner}",
+       subject = "Your Order is Placed",
+       context["seller"] = shipment.seller.name
+       context["partner"] = shipment.delivery_partner.name
+       template_name = "mail_placed.html"
 
-        )
       case ShipmentStatus.out_for_delivery:
-       await self.notification_service.send_mail(
-          recipients=[shipment.client_contact_email],
-          subject="Your Order is arriving",
-          body="Our delivery executive is on their way"
-                "to delivery your order. Please ensure you are available"
-                 "to recieve the same" ,
+        subject = "Your Order is Arriving Soon"
+        template_name = "mail_out_for_delivery.html"
 
-        )
+      case ShipmentStatus.delivered:
+        subject = "Your Order is Delivered"
+        template_name = "mail_delivered.html"
 
+      case ShipmentStatus.cancelled:
+        subject = "Your Order is Cancelled ✖"
+        template_name = "mail_cancelled.html"
+
+
+    ## メール送信のための関数を呼び出す
+    self.notification_service.send_email_with_template(
+
+      recipients=[shipment.client_contact_email],
+      subject=subject,
+      context=context,
+      template_name=template_name
+
+    )
