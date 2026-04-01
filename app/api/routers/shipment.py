@@ -1,13 +1,17 @@
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from app.api.schemas.shipment import ShipmentRead, ShipmentCreate, ShipmentUpdate
 from app.api.dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
+from app.utils import TEMPLATE_DIR
 
-router = APIRouter()
+router = APIRouter(prefix="/shipment" ,tags=["Shipment"])
 
-@router.get("/shipment", response_model=ShipmentRead)
+templates=Jinja2Templates(TEMPLATE_DIR)
+
+@router.get("/", response_model=ShipmentRead)
 async def get_shipment(id:UUID,service:ShipmentServiceDep):
     shipment = await service.get(id)
     if shipment is None:
@@ -18,14 +22,21 @@ async def get_shipment(id:UUID,service:ShipmentServiceDep):
     return shipment
 
 @router.get('/track')
-async def get_tracking(id:UUID,service:ShipmentServiceDep):
+async def get_tracking(request:Request, id:UUID,service:ShipmentServiceDep):
     shipment = await service.get(id)
-    return HTMLResponse(
-        content = f"<body><h1>Order #{shipment.id}:{shipment.status}</h1></body>"
+    context = shipment.model_dump()
+    context["status"] = shipment.status
+    context["partner"] = shipment.delivery_partner.name
+    context["timeline"]=shipment.timeline
+
+    return templates.TemplateResponse(
+        request,
+        name="track.html",
+        context=context
     )
 
 
-@router.post("/shipment",response_model=None)
+@router.post("/",response_model=None)
 async def create_shipment(
     shipment:ShipmentCreate,
     service:ShipmentServiceDep,
@@ -34,7 +45,7 @@ async def create_shipment(
     return await service.add(shipment,seller)
 
 
-@router.patch("/shipment",response_model=ShipmentRead)
+@router.patch("/",response_model=ShipmentRead)
 async def update_shipment(
     id:UUID, shipment_update:ShipmentUpdate,
     partner:DeliveryPartnerDep,
@@ -59,7 +70,7 @@ async def cancel_shipment(
 ):
     await service.cancel(id,seller)
 
-@router.delete("/shipment")
+@router.delete("/")
 async def delete_shipment(id:UUID,service:ShipmentServiceDep):
 
     await service.delete(id)

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>荷物追跡 - {{ id }}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      background: #f4f6f9;
+      color: #333;
+      padding: 32px 16px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      max-width: 680px;
+      margin: 0 auto 24px;
+      padding: 28px 32px;
+    }
+
+    h1 { font-size: 1.4rem; margin-bottom: 4px; }
+    .subtitle { font-size: 0.85rem; color: #888; margin-bottom: 24px; word-break: break-all; }
+
+    /* ---- ステータスバッジ ---- */
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-placed           { background: #e8f0fe; color: #1a73e8; }
+    .badge-in_transit       { background: #fff3e0; color: #e65100; }
+    .badge-out_for_delivery { background: #e8f5e9; color: #2e7d32; }
+    .badge-delivered        { background: #e8f5e9; color: #1b5e20; }
+    .badge-cancelled        { background: #fce8e6; color: #c62828; }
+
+    /* ---- 詳細グリッド ---- */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
+      margin-top: 20px;
+    }
+    .info-item label {
+      display: block;
+      font-size: 0.75rem;
+      color: #888;
+      margin-bottom: 2px;
+    }
+    .info-item span { font-size: 0.95rem; font-weight: 500; }
+
+    /* ---- タイムライン ---- */
+    h2 { font-size: 1.1rem; margin-bottom: 20px; }
+
+    .timeline { position: relative; padding-left: 24px; }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 7px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: #e0e0e0;
+    }
+
+    .event {
+      position: relative;
+      margin-bottom: 24px;
+    }
+    .event:last-child { margin-bottom: 0; }
+
+    .event::before {
+      content: "";
+      position: absolute;
+      left: -20px;
+      top: 6px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #1a73e8;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 2px #1a73e8;
+    }
+    .event:first-child::before { background: #34a853; box-shadow: 0 0 0 2px #34a853; }
+
+    .event-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 2px;
+    }
+    .event-status { font-weight: 600; font-size: 0.9rem; }
+    .event-time { font-size: 0.78rem; color: #999; margin-left: auto; }
+    .event-location { font-size: 0.82rem; color: #666; }
+    .event-desc { font-size: 0.85rem; color: #555; margin-top: 4px; }
+
+    .empty { color: #aaa; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <!-- 荷物サマリー -->
+  <div class="card">
+    <h1>荷物追跡</h1>
+    <p class="subtitle">ID: {{ id }}</p>
+
+    <span class="badge badge-{{ status }}">
+      {% if status == "placed" %}注文受付
+      {% elif status == "in_transit" %}輸送中
+      {% elif status == "out_for_delivery" %}配達中
+      {% elif status == "delivered" %}配達完了
+      {% elif status == "cancelled" %}キャンセル済
+      {% else %}{{ status }}
+      {% endif %}
+    </span>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <label>内容物</label>
+        <span>{{ content }}</span>
+      </div>
+      <div class="info-item">
+        <label>重量</label>
+        <span>{{ weight }} kg</span>
+      </div>
+      <div class="info-item">
+        <label>お届け先 (郵便番号)</label>
+        <span>{{ destination }}</span>
+      </div>
+      <div class="info-item">
+        <label>配送業者</label>
+        <span>{{ partner }}</span>
+      </div>
+      <div class="info-item">
+        <label>注文日時</label>
+        <span>{{ created_at.strftime("%Y/%m/%d %H:%M") if created_at else "-" }}</span>
+      </div>
+      <div class="info-item">
+        <label>配達予定日</label>
+        <span>{{ estimated_delivery.strftime("%Y/%m/%d") if estimated_delivery else "-" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- タイムライン -->
+  <div class="card">
+    <h2>配送タイムライン</h2>
+
+    {% if timeline %}
+    <div class="timeline">
+      {% for event in timeline | sort(attribute="created_at", reverse=True) %}
+      <div class="event">
+        <div class="event-header">
+          <span class="event-status">
+            {% if event.status == "placed" %}注文受付
+            {% elif event.status == "in_transit" %}輸送中
+            {% elif event.status == "out_for_delivery" %}配達中
+            {% elif event.status == "delivered" %}配達完了
+            {% elif event.status == "cancelled" %}キャンセル
+            {% else %}{{ event.status }}
+            {% endif %}
+          </span>
+          <span class="event-time">
+            {{ event.created_at.strftime("%m/%d %H:%M") if event.created_at else "" }}
+          </span>
+        </div>
+        <div class="event-location">郵便番号: {{ event.location }}</div>
+        {% if event.description %}
+        <div class="event-desc">{{ event.description }}</div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <p class="empty">イベント履歴はまだありません。</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>
