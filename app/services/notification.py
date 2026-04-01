@@ -10,7 +10,7 @@ class NotificationService:
     self.fastmail=FastMail(
       ConnectionConfig(
         **notification_settings.model_dump(),
-        TEMPATE_FOLDER=TEMPLATE_DIR
+        TEMPLATE_FOLDER=TEMPLATE_DIR
   )
 )
 
