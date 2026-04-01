@@ -2,10 +2,11 @@
   <p>Hi,</p>
   <p>Your order with {{seller}} is picked up.</p>
   <p>
-    {{partner}} is on its way to you. Use the below link to track your
-    order.
+    {{partner}} is on its way to you. Use the below link to track your order.
   </p>
-  <a href="http://localhost:8000/shipment?id={{ id }}">Track your order</a>
+  <a href="http://localhost:8000/shipment/track/?id={{ id }}"
+    >Track your order</a
+  >
   <br />
   <p>Powered by FastAPI</p>
 </body>
