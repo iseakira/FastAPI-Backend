@@ -1,8 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.templating import Jinja2Templates
+from pydantic import EmailStr
+from app.config import app_settings
 
 from app.database.redis import add_jti_to_blacklist
+from app.utils import TEMPLATE_DIR
 
 from ..schemas.seller import SellerRead, SellerCreate
 from app.api.dependencies import SellerServiceDep, get_seller_access_token
@@ -33,6 +37,31 @@ async def login_seller(
 async def verify_seller_email(token:str,service:SellerServiceDep):
   await service.verify_email(token)
   return {"detail":"Account verified"}
+
+### email password reset
+@router.get("/forgot_password")
+async def forgot_password(email: EmailStr,service: SellerServiceDep):
+  await service.send_passwprd_reset_link(email,router.prefix)
+  return {"detail":"Check email for password reset link"}
+
+## Password Reset Form
+@router.get("/reset_password_form")
+async def get_reset_password_form(request:Request,token:str):
+  templates= Jinja2Templates(TEMPLATE_DIR)
+
+  return templates.TemplateResponse(
+    request=request,
+    name="reset_password.html",
+    context={
+      "reset_url":f"http://{app_settings.APP_DOMAIN}{router.prefix}/reset_password?token={token}"
+    }
+  )
+
+### reset seller password
+@router.get("/reset_password")
+async def reset_password(token:str,password:str,service: SellerServiceDep):
+  await service.reset_password(token,password)
+  return {"detail":"password reset successful"}
 
 
 ## ログアウト
