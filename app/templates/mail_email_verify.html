@@ -1,7 +1,10 @@
 <body>
   <p>Hi {{ username }},</p>
-  <p>Your email address has been successfully verified.</p>
-  <p>You can now use all features of your account.</p>
+  <p>Thank you for registering. Please verify your email address by clicking the link below.</p>
+  <p>
+    <a href="{{ verification_url }}">Verify your email</a>
+  </p>
+  <p>If you did not create an account, you can safely ignore this email.</p>
   <br />
   <p>Powered by FastAPI</p>
 </body>
