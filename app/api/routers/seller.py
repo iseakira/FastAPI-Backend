@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
@@ -58,8 +58,12 @@ async def get_reset_password_form(request:Request,token:str):
   )
 
 ### reset seller password
-@router.get("/reset_password")
-async def reset_password(token:str,password:str,service: SellerServiceDep):
+@router.post("/reset_password")
+async def reset_password(
+  token:str,
+  password:Annotated[str,Form()] = "",
+  service: SellerServiceDep = None):
+  
   await service.reset_password(token,password)
   return {"detail":"password reset successful"}
 
