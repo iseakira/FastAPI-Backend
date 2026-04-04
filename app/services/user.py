@@ -1,21 +1,26 @@
-from fastapi import HTTPException,status
+from uuid import UUID
+
+from fastapi import BackgroundTasks, HTTPException,status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
+from app.config import app_settings
 
 from app.database.models import User
-from app.utils import generate_access_token
+from app.services.notification import NotificationService
+from app.utils import decode_url_safe_token, generate_access_token, generate_url_safe_token
 
 from .base import BaseService
 
 ctx = CryptContext(schemes=["argon2"], deprecated="auto")
 
 class UserService(BaseService):
-  def __init__(self,model:User,session:AsyncSession):
+  def __init__(self,model:User,session:AsyncSession,tasks:BackgroundTasks):
     self.model = model
     self.session=session
+    self.notification_service = NotificationService(tasks)
 
-  async def _add_user(self,data:dict):
+  async def _add_user(self,data:dict,router_prefix:str):
     if not isinstance(data, dict):
        data = data.model_dump()
 
@@ -24,7 +29,39 @@ class UserService(BaseService):
       password_hash=ctx.hash(data["password"])
 
     )
-    return await self._add(user)
+    user = await self._add(user)
+    token = generate_url_safe_token({
+      "email":user.email,
+      "id":str(user.id)
+    })
+
+    await self.notification_service.send_email_with_template(
+      recipients = [user.email],
+      subject="Verify Your Account With Fastship",
+      context = {
+        "username":user.name,
+        "verification_url":f"http://{app_settings.APP_DOMAIN}/{router_prefix}/verify?token={token}"
+      },
+      template_name="mail_eamil_verify.html",
+    )
+
+    return user
+
+  async def verify_email(self,token:str):
+    token_data=decode_url_safe_token(token)
+
+    if not token_data:
+      raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid token"
+      )
+
+    user=self._get(UUID(token_data["id"]))
+    user.email_verified = True
+
+    await self._update(user)
+
+
 
   async def _get_by_email(self,email) -> User | None:
     return await self.session.scalar(
@@ -44,7 +81,7 @@ class UserService(BaseService):
        )
 
      if not user.email_verified:
-       raise HTTPException(
+        raise HTTPException(
          status_code=status.HTTP_401_UNAUTHORIZED,
          detail="Email not verified",
        )

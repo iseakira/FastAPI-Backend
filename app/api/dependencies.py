@@ -27,11 +27,11 @@ async def get_shipment_service(session:SessionDep,tasks:BackgroundTasks):
     ShipmentEventService(session,tasks),
     )
 
-async def get_seller_service(session:SessionDep):
-  return SellerService(session)
+async def get_seller_service(session:SessionDep,tasks:BackgroundTasks):
+  return SellerService(session,tasks)
 
-async def get_delivery_partner_service(session:SessionDep):
-  return DeliveryPartnerService(session)
+async def get_delivery_partner_service(session:SessionDep,tasks:BackgroundTasks):
+  return DeliveryPartnerService(session,tasks)
 
 
 

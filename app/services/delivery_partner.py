@@ -8,12 +8,13 @@ from .user import UserService
 from app.database.models import DeliveryPartner, Shipment
 
 class DeliveryPartnerService(UserService):
-  def __init__(self,session):
-    super().__init__(DeliveryPartner,session)
+  def __init__(self,session,tasks):
+    super().__init__(DeliveryPartner,session,tasks)
 
   async def add(self,delivery_partner:DeliveryPartnerCreate):
     return await self._add_user(
-      delivery_partner
+      delivery_partner,
+      "partner"
     )
   async def get_partner_by_zipcode(self,zipcode:int)->Sequence[DeliveryPartner]:
     statement = (

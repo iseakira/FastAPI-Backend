@@ -10,6 +10,12 @@ from app.api.dependencies import DeliveryPartnerDep, DeliveryPartnerServiceDep, 
 
 router = APIRouter(prefix="/partner",tags=["Delivery Partner"])
 
+### Verify Seller Email
+@router.get("/verify")
+async def verify_seller_email(token:str,service:DeliveryPartnerDep):
+  await service.verify_email(token)
+  return {"detail":"Account verified"}
+
 @router.post("/signup",response_model=DeliveryPartnerRead)
 async def register_delivery_partner(seller:DeliveryPartnerCreate,service:DeliveryPartnerServiceDep):
   return await service.add(seller)

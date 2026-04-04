@@ -13,6 +13,26 @@
 いったんメールのとこの実装は正確性は後回し
 バグとりふくめてテンプレートも見る
 
+## DBマイグレーションの中事項
+
+既にデータがあるのに、レコードを追加した時、当然既存データのそのレコードはnull
+これがDBのnot null制約に触れてしまう
+対象法としては
+一旦 NULL 許可で追加 → 既存データを更新 → NOT NULL に変更がいい
+
+op.add_column(
+'delivery_partner',
+sa.Column('email_verified', sa.Boolean(), nullable=True)
+)
+
+op.execute("UPDATE delivery_partner SET email_verified = false")
+
+op.alter_column(
+'delivery_partner',
+'email_verified',
+nullable=False
+)
+
 ## DBがおかしいときは、、
 
 環境変数を見直そう
