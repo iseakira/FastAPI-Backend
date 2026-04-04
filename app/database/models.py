@@ -93,6 +93,7 @@ class User(SQLModel,table=False):
 
       name:str
       email:EmailStr
+      email_verified:bool = Field(default=False)
       password_hash:str=Field(exclude=True)
 class Seller(User, table=True):
    __tablename__="seller"
