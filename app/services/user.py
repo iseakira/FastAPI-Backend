@@ -42,7 +42,7 @@ class UserService(BaseService):
         "username":user.name,
         "verification_url":f"http://{app_settings.APP_DOMAIN}/{router_prefix}/verify?token={token}"
       },
-      template_name="mail_eamil_verify.html",
+      template_name="mail_email_verify.html",
     )
 
     return user
@@ -56,7 +56,7 @@ class UserService(BaseService):
         detail="Invalid token"
       )
 
-    user=self._get(UUID(token_data["id"]))
+    user=await self._get(UUID(token_data["id"]))
     user.email_verified = True
 
     await self._update(user)
