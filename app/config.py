@@ -8,8 +8,8 @@ base_config = SettingsConfigDict(
 
 
 class AppSettings(BaseSettings):
-  APP_NAME="FastShip"
-  APP_DOMAIN="localhost:8000"
+  APP_NAME:str="FastShip"
+  APP_DOMAIN:str="localhost:8000"
 
 class DatabaseSettings(BaseSettings):
   POSTGRES_SERVER:str
