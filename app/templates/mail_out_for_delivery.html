@@ -1,6 +1,13 @@
 <body>
   <p>Hi,</p>
-  <p>Our delivery executive is on his way to deliver your shipment. Please ensure you are available at the delivery location and answer the rider's incoming call.</p>
+  <p>
+    Our delivery executive is on his way to deliver your shipment. Please ensure
+    you are available at the delivery location and answer the rider's incoming
+    call.
+  </p>
+  {% if verification_code %}
+  <p>Share {{ verification_code }} with the delivery executive.</p>
+  {% endif %}
   <br />
   <p>Powered by FastShip</p>
 </body>

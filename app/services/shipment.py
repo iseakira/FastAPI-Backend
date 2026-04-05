@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import Shipment
 from datetime import datetime, timedelta
 
+from app.database.redis import get_shipments_vertification_code
 from app.services.base import BaseService
 from app.services.delivery_partner import DeliveryPartnerService
 from app.services.shipment_event import ShipmentEventService
@@ -58,7 +59,22 @@ class ShipmentService(BaseService):
             status_code = status.HTTP_401_UNAUTHORIZED,
             detail="Not authorized"
         )
-    update = shipment_update.model_dump(exclude_none=True)
+
+    if shipment_update.status == ShipmentStatus.delivered:
+      code=get_shipments_vertification_code(shipment.id)
+
+      if code != shipment_update.vertification_code:
+        raise HTTPException(
+          status_code=status.HTTP_401_UNAUTHORIZED,
+          detail="Client not authorized"
+        )
+
+
+
+    update = shipment_update.model_dump(
+      exclude_none=True,
+      exclude=["vertification_code"],
+      )
     if shipment_update.estimated_delivery:
       shipment.estimated_delivery = shipment_update.estimated_delivery
     if len(update) > 0 or not shipment_update.estimated_delivery:
