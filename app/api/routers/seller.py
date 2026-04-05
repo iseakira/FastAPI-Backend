@@ -60,12 +60,20 @@ async def get_reset_password_form(request:Request,token:str):
 ### reset seller password
 @router.post("/reset_password")
 async def reset_password(
+  request:Request,
   token:str,
   password:Annotated[str,Form()] = "",
   service: SellerServiceDep = None):
-  
-  await service.reset_password(token,password)
-  return {"detail":"password reset successful"}
+
+  is_success=await service.reset_password(token,password)
+
+  templates = Jinja2Templates(TEMPLATE_DIR)
+
+  return templates.TemplateResponse(
+    request = request,
+    name = "password/reset_password_success.html" if is_success else "password/reset_password_failed.html",
+
+  )
 
 
 ## ログアウト
