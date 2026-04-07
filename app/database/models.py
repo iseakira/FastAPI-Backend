@@ -56,6 +56,11 @@ class Shipment(SQLModel, table=True):
 
   )
 
+  review: "Review" = Relationship(
+      back_populates="shipment",
+      sa_relationship_kwargs={"lazy":"selecton"},
+  )
+
   def status(self):
       self.timeline[-1].status
       return self.timeline[-1].status if len(self.timeline) > 0 else None
@@ -159,6 +164,35 @@ class DeliveryPartner(User,table=True):
    def current_handling_capacity(self):
        return self.max_handling_capacity-len(self.active_shipments)
 
+
+
+class Review(SQLModel, table=True):
+    __tablename__ = "review"
+
+    id:UUID=Field(
+     sa_column=Column(
+        ## UUIDの扱いはDBごとに違うので明示
+        postgresql.UUID,
+        ##UUIDの生成ルールを関数で与えてる
+        default=uuid4,
+        primary_key=True,
+     )
+  )
+    created_at:datetime = Field(
+      sa_column = Column(
+         postgresql.TIMESTAMP,
+         default=datetime.now,
+      )
+   )
+
+    rating: int = Field(ge=1,le=5)
+    comment:str | None = Field(default=None)
+
+    shipment_id:UUID = Field(foreign_key="shipment.id")
+    shipment: Shipment = Relationship(
+        back_populates="review",
+        sa_relationship_kwargs={"lazy":"selecton"},
+    )
 
 
 

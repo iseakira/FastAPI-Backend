@@ -1,0 +1,29 @@
+<html>
+  <body>
+    <div>
+      ## Review Page ## ## submit押すとPOSTリクエストが送られるようにする##
+      <form method="post" action="{{ review_url}}">
+        <p>How would you rate our service?</p>
+
+        <div class="row rating">
+          <input required type="radio" name="rating" id="1" value="1" />
+          <label for="1">1</label>
+          <input required type="radio" name="rating" id="2" value="2" />
+          <label for="2">2</label>
+          <input required type="radio" name="rating" id="3" value="3" />
+          <label for="3">3</label>
+          <input required type="radio" name="rating" id="4" value="4" />
+          <label for="4">4</label>
+          <input required type="radio" name="rating" id="5" value="5" />
+          <label for="5">5</label>
+        </div>
+        <p>Is there anything else you want to add?</p>
+        <textarea
+          name="comment"
+          rows="3"
+          placeholder="Your comment here..."
+        ></textarea>
+      </form>
+    </div>
+  </body>
+</html>

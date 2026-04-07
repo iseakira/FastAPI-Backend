@@ -24,5 +24,9 @@ class ShipmentUpdate(BaseModel):
     description:str | None = Field(default=None)
     estimated_delivery:datetime | None = Field(default=None)
 
+class ShipmentReview(BaseModel):
+    rating:int = Field(ge=1,le=5)
+    comment:str | None = Field(default=None)
+
 
 
