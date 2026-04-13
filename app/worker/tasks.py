@@ -1,9 +1,17 @@
 from asgiref.sync import async_to_sync
 from celery import Celery
-from fastapi_mail import ConnectionConfig, FastMail, MessageSchema
+from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
+from pydantic import EmailStr
+from twilio.rest import Client
+
 
 from app.config import db_settings,notification_settings
 from app.utils import TEMPLATE_DIR
+
+twillio_client = Client(
+   notification_settings.TWILIO_SID,
+   notification_settings.TWILIO_AUTH_TOKEN,
+)
 
 fast_mail=FastMail(
       ConnectionConfig(
@@ -34,3 +42,28 @@ def send_mail(
     body
   ))
 
+@app.task
+def send_email_with_template(
+      recipients:list[EmailStr],
+      subject:str,
+      context:dict,
+      template_name:str,
+      ):
+    send_message(
+      message=MessageSchema(
+        recipients=recipients,
+        subject=subject,
+        template_body=context,
+        subtype=MessageType.html
+      ),
+      template_name=template_name,
+    )
+
+
+@app.task
+def send_sms(to:str,body:str):
+   twillio_client.messages.create(
+      from_=notification_settings.TWILIO_NUMBER,
+      to= to,
+      body=body
+    )

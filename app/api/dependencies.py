@@ -20,18 +20,18 @@ from app.utils import decode_access_token
 ## Session sessiondep annotation
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 
-async def get_shipment_service(session:SessionDep,tasks:BackgroundTasks):
+async def get_shipment_service(session:SessionDep):
   return ShipmentService(
     session,
     DeliveryPartnerService(session),
-    ShipmentEventService(session,tasks),
+    ShipmentEventService(session),
     )
 
 async def get_seller_service(session:SessionDep,tasks:BackgroundTasks):
   return SellerService(session,tasks)
 
-async def get_delivery_partner_service(session:SessionDep,tasks:BackgroundTasks):
-  return DeliveryPartnerService(session,tasks)
+async def get_delivery_partner_service(session:SessionDep):
+  return DeliveryPartnerService(session)
 
 
 

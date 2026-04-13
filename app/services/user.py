@@ -1,25 +1,24 @@
 from datetime import timedelta
 from uuid import UUID
 
-from fastapi import BackgroundTasks, HTTPException,status
+from fastapi import  HTTPException,status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 from app.config import app_settings
 
 from app.database.models import User
-from app.services.notification import NotificationService
 from app.utils import decode_url_safe_token, generate_access_token, generate_url_safe_token
+from app.worker.tasks import send_email_with_template
 
 from .base import BaseService
 
 ctx = CryptContext(schemes=["argon2"], deprecated="auto")
 
 class UserService(BaseService):
-  def __init__(self,model:User,session:AsyncSession,tasks:BackgroundTasks):
+  def __init__(self,model:User,session:AsyncSession):
     self.model = model
     self.session=session
-    self.notification_service = NotificationService(tasks)
 
   async def _add_user(self,data:dict,router_prefix:str):
     if not isinstance(data, dict):
@@ -36,7 +35,7 @@ class UserService(BaseService):
       "id":str(user.id)
     })
 
-    await self.notification_service.send_email_with_template(
+    send_email_with_template.delay(
       recipients = [user.email],
       subject="Verify Your Account With Fastship",
       context = {
@@ -102,7 +101,7 @@ class UserService(BaseService):
     user = await self._get_by_email(email)
 
     token = generate_url_safe_token({"id":str(user.id)},salt="password-reset")
-    await self.notification_service.send_email_with_template(
+    send_email_with_template.delay(
       recipients=[user.email],
       subject="FastShip Account Password",
       context = {
