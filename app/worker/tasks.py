@@ -18,7 +18,8 @@ send_message=async_to_sync(fast_mail.send_message)
 
 app=Celery(
   "api_tasks",
-  broker = db_settings.REDIS_URL(9)
+  broker = db_settings.REDIS_URL(9),
+  backend=db_settings.REDIS_URL(9),
 )
 
 @app.task
@@ -32,3 +33,4 @@ def send_mail(
     subject,
     body
   ))
+
