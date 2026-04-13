@@ -4,6 +4,11 @@
 - fastapi app/main.pyでよき
 - /scalarでAPIドキュメントを見れるよ
 
+## ubuntuにceleryworkerを導入
+
+root@M3:/mnt/c/Users/akira/FastAPI-Backend#に行って
+.\venv\Scripts\activateで実行
+
 ## redisの起動方法
 
 - ubuntuからredis-server
