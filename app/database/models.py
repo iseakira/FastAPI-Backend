@@ -13,6 +13,61 @@ class ShipmentStatus(str,Enum):
     out_for_delivery = "out_for_delivery"
     delivered = "delivered"
     cancelled = "cancelled"
+
+class TagName(str,Enum):
+    EXPRESS="express",
+    STANDARD="standard",
+    FRAGILE="fragile",
+    HEAVY = "heavy",
+    INTERNATIONAL="international",
+    DOMESTIC="domestic",
+    TEMPRATURE_CONTROLLED="temperature_controlled",
+    GIFT="gift",
+    RETURN="return",
+    DOCUMENTS="documents"
+
+
+
+
+
+class ShipmentTag(SQLModel, table=True):
+  ## primary_keyが二つともTruなのはshipment_id + tag_id の組み合わせがユニークであるべきだから
+  __tablename__="shipment_tag"
+
+  shipment_id:UUID = Field(
+      foreign_key="shipment.id",
+      primary_key=True,
+
+  )
+  tag_id:UUID = Field(
+      foreign_key="tag.id",
+      primary_key=True,
+
+  )
+
+
+class Tag(SQLModel, table=True):
+  __tablename__="tag"
+
+  id:UUID = Field(
+     sa_column=Column(
+        ## UUIDの扱いはDBごとに違うので明示
+        postgresql.UUID,
+        ##UUIDの生成ルールを関数で与えてる
+        default=uuid4,
+        primary_key=True,
+     )
+  )
+
+  name:TagName
+  instruction:str
+
+  shipments:list["Shipment"] = Relationship(
+      back_populates="tags",
+      link_model=ShipmentTag,
+      sa_relationship_kwargs={"lazy":"selecton"},
+  )
+
 class Shipment(SQLModel, table=True):
   __tablename__ = "shipment"
 
@@ -58,6 +113,11 @@ class Shipment(SQLModel, table=True):
 
   review: "Review" = Relationship(
       back_populates="shipment",
+      sa_relationship_kwargs={"lazy":"selecton"},
+  )
+  tags: list[Tag] = Relationship(
+      back_populates="shipments",
+      link_model=ShipmentTag,
       sa_relationship_kwargs={"lazy":"selecton"},
   )
 
