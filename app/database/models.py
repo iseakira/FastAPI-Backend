@@ -270,7 +270,7 @@ class Order(SQLModel,table=True):
     product_id:UUID = Field(foreign_key="product.id",primary_key=True)
 
     created_at:datetime
-    quantity:int
+    quantity:int = Field(default=1)
 
     shipment: "Shipment" = Relationship(
         back_populates="orders"
