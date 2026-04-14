@@ -3,13 +3,13 @@ from uuid import UUID
 from fastapi import HTTPException,status
 
 from app.api.schemas.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
-from app.database.models import DeliveryPartner, Review, Seller, ShipmentStatus
+from app.database.models import DeliveryPartner, Review, Seller, ShipmentStatus, TagName
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database.models import Shipment
 from datetime import datetime, timedelta
 
-from app.database.redis import get_shipments_vertification_code
+from app.database.redis import get_shipments_verification_code
 from app.services.base import BaseService
 from app.services.delivery_partner import DeliveryPartnerService
 from app.services.shipment_event import ShipmentEventService
@@ -52,6 +52,7 @@ class ShipmentService(BaseService):
 
      return shipment
 
+## Update fields of a shipment
   async def update(self,id:UUID,shipment_update:ShipmentUpdate,partner:DeliveryPartner):
     shipment = await self.get(id)
 
@@ -62,9 +63,9 @@ class ShipmentService(BaseService):
         )
 
     if shipment_update.status == ShipmentStatus.delivered:
-      code=get_shipments_vertification_code(shipment.id)
+      code=get_shipments_verification_code(shipment.id)
 
-      if code != shipment_update.vertification_code:
+      if code != shipment_update.verification_code:
         raise HTTPException(
           status_code=status.HTTP_401_UNAUTHORIZED,
           detail="Client not authorized"
@@ -74,7 +75,7 @@ class ShipmentService(BaseService):
 
     update = shipment_update.model_dump(
       exclude_none=True,
-      exclude=["vertification_code"],
+      exclude=["verification_code"],
       )
     if shipment_update.estimated_delivery:
       shipment.estimated_delivery = shipment_update.estimated_delivery
@@ -104,6 +105,26 @@ class ShipmentService(BaseService):
     await self._delete(await self.get(id))
 
 
+  async def add_tag(self,id:UUID, tag_name:TagName):
+    shipment= await self.get(id)
+    shipment.tags.append(await tag_name.tag(self.session))
+
+    return await self._update(shipment)
+
+  async def remove_tag(self,id:UUID, tag_name:TagName):
+    shipment= await self.get(id)
+    try:
+      shipment.tags.remove(await tag_name.tag(self.session))
+
+    except ValueError:
+      raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Tag doesn`t exist on shipment",
+      )
+
+    return await self._update(shipment)
+
+
   async def rate(self,token:str,rating:int, comment:str):
     token_data=decode_url_safe_token(token)
 
@@ -121,5 +142,7 @@ class ShipmentService(BaseService):
     )
     self.session.add(new_review)
     await self.session.commit()
+
+
 
 

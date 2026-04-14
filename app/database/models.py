@@ -1,9 +1,10 @@
 from pydantic import EmailStr
-from sqlalchemy import ARRAY,INTEGER
+from sqlalchemy import ARRAY,INTEGER, select
 from sqlmodel import Column, Relationship, SQLModel,Field
 from uuid import uuid4,UUID
 from datetime import datetime
 from enum import Enum
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.dialects import postgresql
 
 
@@ -15,16 +16,21 @@ class ShipmentStatus(str,Enum):
     cancelled = "cancelled"
 
 class TagName(str,Enum):
-    EXPRESS="express",
-    STANDARD="standard",
-    FRAGILE="fragile",
-    HEAVY = "heavy",
-    INTERNATIONAL="international",
-    DOMESTIC="domestic",
-    TEMPRATURE_CONTROLLED="temperature_controlled",
-    GIFT="gift",
-    RETURN="return",
+    EXPRESS="express"
+    STANDARD="standard"
+    FRAGILE="fragile"
+    HEAVY = "heavy"
+    INTERNATIONAL="international"
+    DOMESTIC="domestic"
+    TEMPRATURE_CONTROLLED="temperature_controlled"
+    GIFT="gift"
+    RETURN="return"
     DOCUMENTS="documents"
+
+    async def tag(self,session:AsyncSession):
+        return await session.scalar(
+            select(Tag).where(Tag.name==self.value)
+        )
 
 
 
@@ -65,7 +71,7 @@ class Tag(SQLModel, table=True):
   shipments:list["Shipment"] = Relationship(
       back_populates="tags",
       link_model=ShipmentTag,
-      sa_relationship_kwargs={"lazy":"selecton"},
+      sa_relationship_kwargs={"lazy":"immediate"},
   )
 
 class Shipment(SQLModel, table=True):
@@ -113,12 +119,16 @@ class Shipment(SQLModel, table=True):
 
   review: "Review" = Relationship(
       back_populates="shipment",
-      sa_relationship_kwargs={"lazy":"selecton"},
+      sa_relationship_kwargs={"lazy":"selectin"},
   )
   tags: list[Tag] = Relationship(
       back_populates="shipments",
       link_model=ShipmentTag,
-      sa_relationship_kwargs={"lazy":"selecton"},
+      sa_relationship_kwargs={"lazy":"immediate"},
+  )
+
+  orders: list["Order"] = Relationship(
+      back_populates = "shipments",
   )
 
   def status(self):
@@ -251,9 +261,38 @@ class Review(SQLModel, table=True):
     shipment_id:UUID = Field(foreign_key="shipment.id")
     shipment: Shipment = Relationship(
         back_populates="review",
-        sa_relationship_kwargs={"lazy":"selecton"},
+        sa_relationship_kwargs={"lazy":"selectin"},
     )
 
+
+class Order(SQLModel,table=True):
+    shipment_id:UUID = Field(foreign_key="shipment.id",primary_key=True)
+    product_id:UUID = Field(foreign_key="product.id",primary_key=True)
+
+    created_at:datetime
+    quantity:int
+
+    shipment: "Shipment" = Relationship(
+        back_populates="orders"
+    )
+
+    product:"Product" = Relationship(
+        back_populates = "orders"
+    )
+
+class Product(SQLModel, table=True):
+    id:UUID
+    title:str
+    description:str
+    price:float
+    weight:float
+
+    order:list["Order"] = Relationship(
+        back_populates="products",
+    )
+
+
+shipment = Shipment()
 
 
 

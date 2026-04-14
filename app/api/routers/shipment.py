@@ -5,7 +5,8 @@ from fastapi import APIRouter, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.api.schemas.shipment import ShipmentRead, ShipmentCreate, ShipmentReview, ShipmentUpdate
-from app.api.dependencies import DeliveryPartnerDep, SellerDep, ShipmentServiceDep
+from app.api.dependencies import DeliveryPartnerDep, SellerDep, SessionDep, ShipmentServiceDep
+from app.database.models import TagName
 from app.utils import TEMPLATE_DIR
 
 from app.config import app_settings
@@ -65,13 +66,42 @@ async def update_shipment(
         id,shipment_update,partner
     )
 
+## Add a tag to a Shipment
+@router.get("/tag",response_model=ShipmentRead)
+async def add_tag_to_shipment(
+    id:UUID,
+    tag_name:TagName,
+    service: ShipmentServiceDep,
+
+):
+    return await service.add_tag(id,tag_name)
+
+
+## Remove a tag from a Shipment
+@router.delete("/tag",response_model=ShipmentRead)
+async def remove_tag_from_shipment(
+    id:UUID,
+    tag_name:TagName,
+    service: ShipmentServiceDep,
+):
+    return await service.remove_tag(id,tag_name)
+
 @router.get("/cancel", response_model = ShipmentRead)
 async def cancel_shipment(
     id:UUID,
     seller:SellerDep,
     service:ShipmentServiceDep
 ):
-    await service.cancel(id,seller)
+    return await service.cancel(id,seller)
+
+@router.get("/tagged",response_model=list[ShipmentRead])
+async def get_shipments_with_tag(
+    tag_name:TagName,
+    session:SessionDep,
+    ):
+    tag = await tag_name.tag(session)
+    return tag.shipments
+
 
 @router.delete("/")
 async def delete_shipment(id:UUID,service:ShipmentServiceDep):
@@ -87,7 +117,7 @@ async def submit_review(
     request:Request,
     token:str,
     ):
-    templates.TemplateResponse(
+    return templates.TemplateResponse(
         request=request,
         name="review.html",
         context={
@@ -107,5 +137,5 @@ async def submit_review(
     service:ShipmentServiceDep,
     ):
     await service.rate(token,rating,comment)
-    return {"detail:Review sbmitted"}
+    return {"detail": "Review submitted"}
 
