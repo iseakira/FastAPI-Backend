@@ -1,9 +1,7 @@
 from uuid import UUID
 
-from fastapi import HTTPException,status
-
 from app.api.schemas.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
-from app.core.exceptions import ClientNotAuthorized, EntityNotFoundError
+from app.core.exceptions import ClientNotAuthorized, EntityNotFoundError, InvalidToken
 from app.database.models import DeliveryPartner, Review, Seller, ShipmentStatus, TagName
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,19 +59,13 @@ class ShipmentService(BaseService):
     shipment = await self.get(id)
 
     if shipment.delivery_partner_id != partner.id:
-        raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail="Not authorized"
-        )
+        raise ClientNotAuthorized()
 
     if shipment_update.status == ShipmentStatus.delivered:
       code=get_shipments_verification_code(shipment.id)
 
       if code != shipment_update.verification_code:
-        raise HTTPException(
-          status_code=status.HTTP_401_UNAUTHORIZED,
-          detail="Client not authorized"
-        )
+        raise ClientNotAuthorized()
 
 
 
@@ -118,10 +110,7 @@ class ShipmentService(BaseService):
       shipment.tags.remove(await tag_name.tag(self.session))
 
     except ValueError:
-      raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Tag doesn`t exist on shipment",
-      )
+      raise EntityNotFoundError()
 
     return await self._update(shipment)
 
@@ -130,10 +119,7 @@ class ShipmentService(BaseService):
     token_data=decode_url_safe_token(token)
 
     if not token_data:
-      raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not authorized",
-      )
+      raise InvalidToken()
 
     shipment=self.get(UUID(token_data["id"]))
     new_review=Review(

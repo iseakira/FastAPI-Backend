@@ -1,4 +1,3 @@
-from fastapi import HTTPException,status
 from sqlalchemy import Sequence, select
 from sqlalchemy.orm import selectinload
 
