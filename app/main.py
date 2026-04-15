@@ -13,7 +13,26 @@ async def lifespan_handler(app:FastAPI):
     await create_db_tables()
     yield
 
-app = FastAPI(lifespan = lifespan_handler)
+description = """
+Delivery Management System for sellers and delivery agents
+
+### Seller
+- Submit shipment effortlessly
+- Share tracking links with coustomers
+
+### Delivery Agent
+- Auto accept shipments
+- Track and update shipment status
+- Email and SMS notifications
+
+
+"""
+
+app = FastAPI(
+    lifespan = lifespan_handler,
+    title="FastShip",
+    description=description
+    )
 
 app.include_router(master_router)
 
@@ -31,8 +50,6 @@ def error_handler(request,exception:FastShipError):
     )
 
 app.add_exception_handler(FastShipError,error_handler)
-
-
 
 
 @app.get("/scalar")
