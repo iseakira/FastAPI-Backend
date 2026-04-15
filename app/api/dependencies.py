@@ -14,6 +14,8 @@ from app.core.security import oauth2_scheme_seller,oauth2_scheme_partner
 from app.services.shipment_event import ShipmentEventService
 from app.utils import decode_access_token
 
+from app.core.exceptions import InvalidToken,DeliveryPartnerNotAvailable,ClientNotAuthorized
+
 
 
 
@@ -39,10 +41,7 @@ async def get_delivery_partner_service(session:SessionDep):
 async def _get_access_token(token:str)-> dict:
    data= decode_access_token(token)
    if data is None or await is_jti_blacklisted(data["jti"]):
-    raise HTTPException(
-      status_code=status.HTTP_401_UNAUTHORIZED,
-      detail="Invalid access token"
-    )
+    raise InvalidToken()
    return data
 
 ## Seller access token data
@@ -58,10 +57,7 @@ async def get_current_seller(
     session:SessionDep):
   seller=await session.get(Seller,UUID(token_data["user"]["id"]))
   if seller is None:
-    raise HTTPException(
-      sstaus_code = status.HTTP_401_UNAUTHORIZED,
-      detail="Not Authorized"
-    )
+    raise ClientNotAuthorized()
   return seller
 
 ## login partner
@@ -70,10 +66,7 @@ async def get_current_partner(
     session:SessionDep):
   partner=await session.get(DeliveryPartner,UUID(token_data["user"]["id"]))
   if partner is None:
-    raise HTTPException(
-      sstaus_code = status.HTTP_401_UNAUTHORIZED,
-      detail="Not Authorized"
-    )
+    raise DeliveryPartnerNotAvailable()
   return partner
 
 

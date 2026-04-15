@@ -3,6 +3,7 @@ from uuid import UUID
 from fastapi import HTTPException,status
 
 from app.api.schemas.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
+from app.core.exceptions import EntityNotFoundError
 from app.database.models import DeliveryPartner, Review, Seller, ShipmentStatus, TagName
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -27,7 +28,10 @@ class ShipmentService(BaseService):
 
 
   async def get(self,id:UUID) -> Shipment:
-    return await self._get(id)
+    shipment = await self._get(id)
+    if shipment is None:
+      raise EntityNotFoundError()
+    return shipment
 
 
 

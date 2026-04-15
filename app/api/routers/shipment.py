@@ -6,6 +6,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from app.api.schemas.shipment import ShipmentRead, ShipmentCreate, ShipmentReview, ShipmentUpdate
 from app.api.dependencies import DeliveryPartnerDep, SellerDep, SessionDep, ShipmentServiceDep
+from app.core.exceptions import NothingToUpdate
 from app.database.models import TagName
 from app.utils import TEMPLATE_DIR
 
@@ -18,11 +19,6 @@ templates=Jinja2Templates(TEMPLATE_DIR)
 @router.get("/", response_model=ShipmentRead)
 async def get_shipment(id:UUID,service:ShipmentServiceDep):
     shipment = await service.get(id)
-    if shipment is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail = "Shipment not found"
-        )
     return shipment
 
 @router.get('/track')
@@ -57,10 +53,7 @@ async def update_shipment(
 
     update = shipment_update.model_dump(exclude_none=True)
     if not update:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided for update"
-        )
+        raise NothingToUpdate()
 
     return await service.update(
         id,shipment_update,partner

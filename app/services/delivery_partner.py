@@ -3,6 +3,7 @@ from sqlalchemy import Sequence, select
 from sqlalchemy.orm import selectinload
 
 from app.api.schemas.delivery_partner import DeliveryPartnerCreate
+from app.core.exceptions import DeliveryPartnerNotAvailable
 
 from .user import UserService
 from app.database.models import DeliveryPartner, Shipment
@@ -33,10 +34,7 @@ class DeliveryPartnerService(UserService):
         partner.shipments.append(shipment)
         return partner
 
-    raise HTTPException(
-      status_code = status.HTTP_406_NOT_ACCEPTABLE,
-      detail = "No Delivery Partner Avaiable"
-    )
+    raise DeliveryPartnerNotAvailable()
 
 
 

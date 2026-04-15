@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 from app.config import app_settings
 
+from app.core.exceptions import BadCredentials, ClientNotAuthorized, InvalidToken
 from app.database.models import User
 from app.utils import decode_url_safe_token, generate_access_token, generate_url_safe_token
 from app.worker.tasks import send_email_with_template
@@ -51,10 +52,7 @@ class UserService(BaseService):
     token_data=decode_url_safe_token(token)
 
     if not token_data:
-      raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail="Invalid token"
-      )
+      raise InvalidToken()
 
     user=await self._get(UUID(token_data["id"]))
     user.email_verified = True
@@ -75,16 +73,10 @@ class UserService(BaseService):
        password,
        user.password_hash,
      ):
-       raise HTTPException(
-         status_code = status.HTTP_404_NOT_FOUND,
-         detail = "Email or Password is not found"
-       )
+       raise BadCredentials()
 
      if not user.email_verified:
-        raise HTTPException(
-         status_code=status.HTTP_401_UNAUTHORIZED,
-         detail="Email not verified",
-       )
+        raise ClientNotAuthorized()
 
      token=generate_access_token(
        data={
