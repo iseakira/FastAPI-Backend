@@ -1,28 +1,31 @@
 
 class FastShipError(Exception):
-  "FastAPIで発生させるすべてのれいがいのためのもの"
+  status_code:int = 500
+  detail:str="An unexpected error occurred"
 
 class EntityNotFoundError(FastShipError):
-  "Entity not Found in Database"
+  status_code=404
+  detail="Entity not found"
 
 class ClientNotAuthorized(FastShipError):
-  "Client is not authorized to perform the action"
-class ClientNotAuthorized(FastShipError):
-  "Client is not verified"
+  status_code = 403
+  detail = "Not authorized to perform this action"
 
 class BadCredentials(FastShipError):
-  "User email or password is incorrect"
+  status_code = 401
+  detail = "Email or password is incorrect"
 
 class InvalidToken(FastShipError):
-  "Access token is invalid or expired"
+   status_code = 401
+   detail = "Access token is invalid or expired"
 
 
 class DeliveryPartnerNotAvailable(FastShipError):
-  "Delivery Partner not Found"
+  status_code = 404
+  detail = "Delivery partner not available"
 
 class NothingToUpdate(FastShipError):
-  "No data provided to update"
+    status_code = 400
+    detail = "No data provided to update"
 
-class BadCredentials(FastShipError):
-  "Email or Password is not found"
 

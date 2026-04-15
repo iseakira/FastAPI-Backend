@@ -1,6 +1,8 @@
 from fastapi import  BackgroundTasks, FastAPI
+from fastapi.responses import JSONResponse
 from scalar_fastapi import get_scalar_api_reference
 from contextlib import asynccontextmanager
+from app.core.exceptions import FastShipError, InvalidToken
 from app.database.session import create_db_tables
 
 from app.api.router import master_router
@@ -14,6 +16,16 @@ async def lifespan_handler(app:FastAPI):
 app = FastAPI(lifespan = lifespan_handler)
 
 app.include_router(master_router)
+
+
+def error_handler(request,exception:FastShipError):
+    return JSONResponse(
+        content = {"detail":exception.detail},
+        status_code = exception.status_code,
+    )
+
+app.add_exception_handler(FastShipError,error_handler)
+
 
 
 @app.get("/mail")

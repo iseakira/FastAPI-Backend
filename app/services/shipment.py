@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi import HTTPException,status
 
 from app.api.schemas.shipment import ShipmentCreate, ShipmentReview, ShipmentUpdate
-from app.core.exceptions import EntityNotFoundError
+from app.core.exceptions import ClientNotAuthorized, EntityNotFoundError
 from app.database.models import DeliveryPartner, Review, Seller, ShipmentStatus, TagName
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -95,10 +95,7 @@ class ShipmentService(BaseService):
   async def cancel(self,id:UUID,seller:Seller) -> Shipment:
     shipment = await self.get(id)
     if shipment.seller_id != seller.id:
-      raise HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Not Authorized"
-      )
+      raise ClientNotAuthorized()
     await self.event_service.add(
       shipment=shipment,
       status=ShipmentStatus.cancelled
