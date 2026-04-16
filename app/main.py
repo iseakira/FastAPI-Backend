@@ -51,6 +51,9 @@ def error_handler(request,exception:FastShipError):
 
 app.add_exception_handler(FastShipError,error_handler)
 
+@app.get("/")
+def read_root():
+    return {"detail":"server is running..."}
 
 @app.get("/scalar")
 def get_scalar_docs():

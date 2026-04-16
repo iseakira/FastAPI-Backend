@@ -281,7 +281,7 @@ class Order(SQLModel,table=True):
     )
 
 class Product(SQLModel, table=True):
-    id:UUID
+    id:UUID = Field(default=None, primary_key=True,)
     title:str
     description:str
     price:float
