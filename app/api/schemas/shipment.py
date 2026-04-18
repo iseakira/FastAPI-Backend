@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from pydantic import BaseModel, EmailStr, Field, Tag
+from pydantic import BaseModel, EmailStr, Field
 from app.database.models import Seller, ShipmentEvent, ShipmentStatus, TagName
 
 class BaseShipment(BaseModel):
@@ -16,7 +16,7 @@ class ShipmentRead(BaseShipment):
     id:UUID
     timeline:list[ShipmentEvent]
     estimated_delivery:datetime
-    tags:list[Tag]
+    tags:list[TagRead]
 
 class ShipmentCreate(BaseShipment):
     client_contact_email:EmailStr

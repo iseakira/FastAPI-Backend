@@ -128,7 +128,7 @@ class Shipment(SQLModel, table=True):
   )
 
   orders: list["Order"] = Relationship(
-      back_populates = "shipments",
+      back_populates = "shipment",
   )
 
   def status(self):
@@ -277,7 +277,7 @@ class Order(SQLModel,table=True):
     )
 
     product:"Product" = Relationship(
-        back_populates = "orders"
+        back_populates = "order"
     )
 
 class Product(SQLModel, table=True):
@@ -290,9 +290,6 @@ class Product(SQLModel, table=True):
     order:list["Order"] = Relationship(
         back_populates="products",
     )
-
-
-shipment = Shipment()
 
 
 
