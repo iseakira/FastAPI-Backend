@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.models import Shipment
 from datetime import datetime, timedelta
 
-from app.database.redis import get_shipments_verification_code
+from app.database.redis import get_shipments_vertification_code
 from app.services.base import BaseService
 from app.services.delivery_partner import DeliveryPartnerService
 from app.services.shipment_event import ShipmentEventService
@@ -62,7 +62,7 @@ class ShipmentService(BaseService):
         raise ClientNotAuthorized()
 
     if shipment_update.status == ShipmentStatus.delivered:
-      code=get_shipments_verification_code(shipment.id)
+      code=get_shipments_vertification_code(shipment.id)
 
       if code != shipment_update.verification_code:
         raise ClientNotAuthorized()

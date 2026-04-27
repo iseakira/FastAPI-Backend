@@ -14,7 +14,7 @@ _shipment_vertification_codes =Redis(
   host=db_settings.REDIS_HOST,
   port=db_settings.REDIS_PORT,
   db=1,
-  decode_response =True
+  decode_responses =True
 )
 
 async def add_jti_to_blacklist(jti:str):
